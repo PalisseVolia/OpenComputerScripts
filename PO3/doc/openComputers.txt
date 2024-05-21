@@ -1,0 +1,147 @@
+ NuclearCraft OpenComputers Methods
+#==================================#
+
+ Processor - e.g. component.nc_manufactory:
+>------------------------------------------<
+
+boolean getIsProcessing()
+
+double getCurrentTime()
+
+double getBaseProcessTime()
+double getBaseProcessPower()
+
+Table[] getItemInputs() -> {{stackSize, itemID}, ...}
+Table[] getFluidInputs() -> {{fluidAmount, fluidName}, ...}
+Table[] getItemOutputs() -> {{stackSize, itemID}, ...}
+Table[] getFluidOutputs() -> {{fluidAmount, fluidName}, ...}
+
+void setItemInputSorption(int side, int index, int sorption)
+void setFluidInputSorption(int side, int index, int sorption)
+void setItemOutputSorption(int side, int index, int sorption)
+void setFluidOutputSorption(int side, int index, int sorption)
+
+void haltProcess()
+void resumeProcess()
+
+---------------------------------------------------------------------------------------------------------------------------
+
+ Fission Reactor - component.nc_fission_reactor:
+>-----------------------------------------------<
+
+boolean isComplete()
+boolean isReactorOn()
+
+int getLengthX()
+int getLengthY()
+int getLengthZ()
+
+long getHeatStored()
+long getHeatCapacity()
+
+int getTemperature()
+
+double getCoolingRate()
+double getRawHeatingRate()
+double getMeanEfficiency()
+double getMeanHeatMultiplier()
+
+int getNumberOfIrradiators()
+int getNumberOfCells()
+int getNumberOfSinks()
+int getNumberOfVessels()
+int getNumberOfHeaters()
+int getNumberOfShields()
+
+Table[] getIrradiatorStats()
+Table[] getCellStats()
+Table[] getSinkStats()
+Table[] getVesselStats()
+Table[] getHeaterStats()
+Table[] getShieldStats()
+
+int getNumberOfClusters()
+
+Table[] getClusterInfo(int clusterID)
+
+void clearAllMaterial()
+
+---------------------------------------------------------------------------------------------------------------------------
+
+ Heat Exchanger - component.nc_heat_exchanger:
+>---------------------------------------------<
+
+boolean isComplete()
+boolean isHeatExchangerOn()
+
+int getLengthX()
+int getLengthY()
+int getLengthZ()
+
+double getFractionOfTubesActive()
+double getMeanEfficiency()
+int getNumberOfExchangerTubes()
+int getNumberOfCondensationTubes()
+
+void activate()
+void deactivate()
+
+void clearAllMaterial()
+
+---------------------------------------------------------------------------------------------------------------------------
+
+ Turbine - component.nc_turbine:
+>-------------------------------<
+
+boolean isComplete()
+boolean isTurbineOn()
+
+int getLengthX()
+int getLengthY()
+int getLengthZ()
+
+boolean isProcessing()
+
+long getEnergyStored()
+long getEnergyCapacity()
+
+double getPower()
+
+double getCoilConductivity()
+
+String getFlowDirection()
+
+double getTotalExpansionLevel()
+double getIdealTotalExpansionLevel()
+
+double[] getExpansionLevels()
+double[] getIdealExpansionLevels()
+double[] getBladeEfficiencies()
+
+int getInputRate()
+
+int getNumberOfDynamoParts()
+
+Table[] getDynamoPartStats()
+
+void activate()
+void deactivate()
+
+void clearAllMaterial()
+
+---------------------------------------------------------------------------------------------------------------------------
+
+ Geiger Counter - component.nc_geiger_counter:
+>---------------------------------------------<
+
+double getChunkRadiationLevel()
+
+---------------------------------------------------------------------------------------------------------------------------
+
+ Radiation Scrubber - component.nc_radiation_scrubber:
+>-----------------------------------------------------<
+
+double getRadiationRemovalRate()
+double getEfficiency()
+___________________________________________________________________________________________________________________________
+---------------------------------------------------------------------------------------------------------------------------

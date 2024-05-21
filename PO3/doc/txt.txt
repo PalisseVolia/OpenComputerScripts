@@ -1,0 +1,3 @@
+wget -f --no-check-certificate 'https://raw.githubusercontent.com/PalisseVolia/OpenComputerScripts/main/PO3/TEST.lua'
+
+wget -f https://raw.githubusercontent.com/PalisseVolia/OpenComputerScripts/main/PO3/TEST.lua
