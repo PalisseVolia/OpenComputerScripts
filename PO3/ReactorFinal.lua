@@ -3,6 +3,9 @@ local term = require "term"
 local computer = require "computer"
 local gpu = component.gpu
 local event = require("event")
+local os = require("os")
+
+Reactor = component.nc_fission_reactor
 
 -- ========================================
 -- Utility functions to draw lines
@@ -190,47 +193,80 @@ function Button:handleClick(clickX, clickY, parentX, parentY)
 end
 
 -- ========================================
--- Example usage
+-- Reactor Panel
 -- ========================================
 
--- Create a window
-local myWindow = Window:new(5, 5, 30, 10)
+-- Define the button click action
+local function onButtonClick()
+    -- When clicked, toggle the reactor state
+    if Reactor.isProcessing() then
+        Reactor.deactivate()
+    else
+        Reactor.activate()
+    end
+end
 
--- Create a Title and add it to the window
-local myTitle = Title:new("Hello, World! This is a very long title")
-myWindow:addChild(myTitle)
+OldHeat = 0
+OldEnergy = 0
 
--- Create TextLines and add them to the window
-local textLine1 = TextLine:new(0, 1, "First line of text")
-local textLine2 = TextLine:new(0, 2, "Second line of text, which is also quite long")
-myWindow:addChild(textLine1)
-myWindow:addChild(textLine2)
+-- Event loop to handle mouse click events
+repeat
+    -- Create the main window
+    local reactorPanel = Window:new(5, 5, 50, 20)
 
--- Create a ProgressBar and add it to the window
-local myProgressBar = ProgressBar:new(0, 3, 75)
-myWindow:addChild(myProgressBar)
+    -- Create the title
+    local reactorTitle = Title:new("Reactor Control Panel")
+    reactorPanel:addChild(reactorTitle)
 
--- Redraw the window to include the Title, TextLines, and ProgressBar
-myWindow:draw()
+    -- Create the heat progress bar
+    local heatProgressBar = ProgressBar:new(5, 3, 0)
+    reactorPanel:addChild(heatProgressBar)
 
+    -- Create the energy progress bar
+    local energyProgressBar = ProgressBar:new(5, 5, 0)
+    reactorPanel:addChild(energyProgressBar)
 
+    -- Create the status text
+    if Reactor.isProcessing() then
+        local statusText = TextLine:new(5, 7, "Reactor Status: ONLINE")
+        reactorPanel:addChild(statusText)
+    else
+        local statusText = TextLine:new(5, 7, "Reactor Status: OFFLINE")
+        reactorPanel:addChild(statusText)
+    end
+    
+    CurrentHeat = math.floor(Reactor.getHeatLevel())
+    MaxHeat = Reactor.getMaxHeatLevel()
+    HeatRatio = math.floor(CurrentHeat / MaxHeat * 100)
+    
+    CurrentEnergy = math.floor(Reactor.getEnergyStored())
+    MaxEnergy = Reactor.getMaxEnergyStored()
+    EnergyRatio = math.floor(CurrentEnergy / MaxEnergy * 100)
 
--- Create a second window
-local myWindow2 = Window:new(35, 25, 50, 20)
+    if HeatRatio < 50 and EnergyRatio < 50 then
+        Reactor.activate()
+    else
+        Reactor.deactivate()
+    end
 
--- Create a Title and add it to the second window
-local myTitle2 = Title:new("Hello, World! too")
-myWindow2:addChild(myTitle2)
+    if (CurrentHeat ~= OldHeat or CurrentEnergy ~= OldEnergy) then
+        computer.beep()
+        OldHeat = CurrentHeat
+        OldEnergy = CurrentEnergy
+    end
 
--- Create TextLines and add them to the second window
-local textLine3 = TextLine:new(0, 1, "Third line of text")
-local textLine4 = TextLine:new(0, 2, "Fourth line of text, which is also quite long")
-myWindow2:addChild(textLine3)
-myWindow2:addChild(textLine4)
+    -- Create the toggle button
+    local toggleButton = Button:new(5, 9, 20, 3, "Toggle Reactor", onButtonClick)
+    reactorPanel:addChild(toggleButton)
 
--- Create a ProgressBar and add it to the window
-local myProgressBar = ProgressBar:new(0, 3, 23)
-myWindow2:addChild(myProgressBar)
+    -- Redraw the reactor panel
+    reactorPanel:draw()
 
--- Redraw the second window to include the Title and TextLines
-myWindow2:draw()
+    local _, _, clickX, clickY = event.pull("touch")
+    for _, child in ipairs(reactorPanel.children) do
+        if child.handleClick then
+            child:handleClick(clickX, clickY, reactorPanel.x, reactorPanel.y)
+        end
+    end
+    os.sleep(0.5)
+until event.pull(1) == "interrupted"
