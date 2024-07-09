@@ -196,23 +196,14 @@ end
 -- Reactor Panel
 -- ========================================
 
-local manualMode = false -- Variable to track the current mode
-
 -- Define the button click action
 local function onButtonClick()
     -- When clicked, toggle the reactor state
-    if manualMode then
-        if Reactor.isProcessing() then
-            Reactor.deactivate()
-        else
-            Reactor.activate()
-        end
+    if Reactor.isProcessing() then
+        Reactor.deactivate()
+    else
+        Reactor.activate()
     end
-end
-
--- Define the manual mode button click action
-local function onManualModeButtonClick()
-    manualMode = not manualMode -- Toggle manual mode
 end
 
 OldHeat = 0
@@ -237,17 +228,13 @@ repeat
 
     -- Create the status text
     if Reactor.isProcessing() then
-        local statusText = TextLine:new(5, 7, "Reactor Status: ONLINE ")
+        local statusText = TextLine:new(5, 7, "Reactor Status: ONLINE")
         reactorPanel:addChild(statusText)
     else
         local statusText = TextLine:new(5, 7, "Reactor Status: OFFLINE")
         reactorPanel:addChild(statusText)
     end
     
-    -- Create the mode text
-    local modeText = TextLine:new(5, 8, "Mode: " .. (manualMode and "MANUAL   " or "AUTOMATIC"))
-    reactorPanel:addChild(modeText)
-
     CurrentHeat = math.floor(Reactor.getHeatLevel())
     MaxHeat = Reactor.getMaxHeatLevel()
     HeatRatio = math.floor(CurrentHeat / MaxHeat * 100)
@@ -256,29 +243,21 @@ repeat
     MaxEnergy = Reactor.getMaxEnergyStored()
     EnergyRatio = math.floor(CurrentEnergy / MaxEnergy * 100)
 
-    if not manualMode then
-        if HeatRatio < 50 and EnergyRatio < 50 then
-            Reactor.activate()
-        else
-            Reactor.deactivate()
-        end
+    if HeatRatio < 50 and EnergyRatio < 50 then
+        Reactor.activate()
+    else
+        Reactor.deactivate()
     end
 
     if (CurrentHeat ~= OldHeat or CurrentEnergy ~= OldEnergy) then
-        heatProgressBar.progress = HeatRatio
-        energyProgressBar.progress = EnergyRatio
         computer.beep()
         OldHeat = CurrentHeat
         OldEnergy = CurrentEnergy
     end
 
     -- Create the toggle button
-    local toggleButton = Button:new(5, 10, 20, 3, "Toggle Reactor", onButtonClick)
+    local toggleButton = Button:new(5, 9, 20, 3, "Toggle Reactor", onButtonClick)
     reactorPanel:addChild(toggleButton)
-
-    -- Create the manual mode button
-    local manualModeButton = Button:new(30, 10, 15, 3, "Manual Mode", onManualModeButtonClick)
-    reactorPanel:addChild(manualModeButton)
 
     -- Redraw the reactor panel
     reactorPanel:draw()

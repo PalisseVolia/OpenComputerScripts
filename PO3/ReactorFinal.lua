@@ -4,8 +4,11 @@ local computer = require "computer"
 local gpu = component.gpu
 local event = require("event")
 local os = require("os")
+local thread = require("thread")
 
 Reactor = component.nc_fission_reactor
+
+term.clear()
 
 -- ========================================
 -- Utility functions to draw lines
@@ -137,7 +140,7 @@ end
 
 function ProgressBar:draw(parentX, parentY, parentWidth)
     -- Calculate the length of the progress bar
-    local barLength = parentWidth - (self.x + 6) -- account for the corners and spaces, and the percentage text
+    local barLength = parentWidth - (self.x + 11) -- account for the corners and spaces, and the percentage text
     local filledLength = math.floor(barLength * self.progress / 100)
     local emptyLength = barLength - filledLength
 
@@ -196,77 +199,129 @@ end
 -- Reactor Panel
 -- ========================================
 
+local manualMode = false -- Variable to track the current mode
+local running = true
+local ReactorPanel -- Declare ReactorPanel globally
+
 -- Define the button click action
 local function onButtonClick()
+    computer.beep()
     -- When clicked, toggle the reactor state
-    if Reactor.isProcessing() then
-        Reactor.deactivate()
-    else
-        Reactor.activate()
+    if manualMode then
+        if Reactor.isProcessing() then
+            Reactor.deactivate()
+        else
+            Reactor.activate()
+        end
     end
 end
 
-OldHeat = 0
-OldEnergy = 0
+-- Define the manual mode button click action
+local function onManualModeButtonClick()
+    computer.beep()
+    manualMode = not manualMode -- Toggle manual mode
+end
 
--- Event loop to handle mouse click events
-repeat
-    -- Create the main window
-    local reactorPanel = Window:new(5, 5, 50, 20)
+local function updateReactorPanel()
+    OldHeat = 0
+    OldEnergy = 0
+    HeatRatio = 0
+    EnergyRatio = 0
+    X = 2
 
-    -- Create the title
-    local reactorTitle = Title:new("Reactor Control Panel")
-    reactorPanel:addChild(reactorTitle)
+    while running do
+        -- Create the main window
+        ReactorPanel = Window:new(15, 4, 50, 20)
 
-    -- Create the heat progress bar
-    local heatProgressBar = ProgressBar:new(5, 3, 0)
-    reactorPanel:addChild(heatProgressBar)
+        -- Create the title
+        local reactorTitle = Title:new("Reactor Control Panel")
+        ReactorPanel:addChild(reactorTitle)
 
-    -- Create the energy progress bar
-    local energyProgressBar = ProgressBar:new(5, 5, 0)
-    reactorPanel:addChild(energyProgressBar)
+        -- Create the heat progress bar
+        local HeatText = TextLine:new(5, X+1, "Heat :")
+        ReactorPanel:addChild(HeatText)
+        local heatProgressBar = ProgressBar:new(5, X+2, HeatRatio)
+        ReactorPanel:addChild(heatProgressBar)
 
-    -- Create the status text
-    if Reactor.isProcessing() then
-        local statusText = TextLine:new(5, 7, "Reactor Status: ONLINE")
-        reactorPanel:addChild(statusText)
-    else
-        local statusText = TextLine:new(5, 7, "Reactor Status: OFFLINE")
-        reactorPanel:addChild(statusText)
+        -- Create the energy progress bar
+        local EnergyText = TextLine:new(5, X+4, "Energy :")
+        ReactorPanel:addChild(EnergyText)
+        local energyProgressBar = ProgressBar:new(5, X+5, EnergyRatio)
+        ReactorPanel:addChild(energyProgressBar)
+
+        -- Create the status text
+        if Reactor.isProcessing() then
+            local statusText = TextLine:new(5, X+7, "Reactor Status: ONLINE ")
+            ReactorPanel:addChild(statusText)
+        else
+            local statusText = TextLine:new(5, X+7, "Reactor Status: OFFLINE")
+            ReactorPanel:addChild(statusText)
+        end
+        
+        -- Create the mode text
+        local modeText = TextLine:new(5, X+8, "Mode: " .. (manualMode and "MANUAL   " or "AUTOMATIC"))
+        ReactorPanel:addChild(modeText)
+
+        CurrentHeat = math.floor(Reactor.getHeatLevel())
+        MaxHeat = Reactor.getMaxHeatLevel()
+        HeatRatio = math.floor(CurrentHeat / MaxHeat * 100)
+        
+        CurrentEnergy = math.floor(Reactor.getEnergyStored())
+        MaxEnergy = Reactor.getMaxEnergyStored()
+        EnergyRatio = math.floor(CurrentEnergy / MaxEnergy * 100)
+
+        if not manualMode then
+            if HeatRatio < 50 and EnergyRatio < 50 then
+                Reactor.activate()
+            else
+                Reactor.deactivate()
+            end
+        end
+
+        if (CurrentHeat ~= OldHeat or CurrentEnergy ~= OldEnergy) then
+            heatProgressBar.progress = HeatRatio
+            energyProgressBar.progress = EnergyRatio
+            computer.beep()
+            OldHeat = CurrentHeat
+            OldEnergy = CurrentEnergy
+        end
+
+        -- Create the toggle button
+        local toggleButton = Button:new(5, X+11, 17, 3, "Toggle Reactor", onButtonClick)
+        ReactorPanel:addChild(toggleButton)
+
+        -- Create the manual mode button
+        local manualModeButton = Button:new(28, X+11, 17, 3, "Manual Mode", onManualModeButtonClick)
+        ReactorPanel:addChild(manualModeButton)
+
+        -- Redraw the reactor panel
+        ReactorPanel:draw()
+        os.sleep(0.1) -- Sleep briefly to reduce CPU usage
     end
-    
-    CurrentHeat = math.floor(Reactor.getHeatLevel())
-    MaxHeat = Reactor.getMaxHeatLevel()
-    HeatRatio = math.floor(CurrentHeat / MaxHeat * 100)
-    
-    CurrentEnergy = math.floor(Reactor.getEnergyStored())
-    MaxEnergy = Reactor.getMaxEnergyStored()
-    EnergyRatio = math.floor(CurrentEnergy / MaxEnergy * 100)
+end
 
-    if HeatRatio < 50 and EnergyRatio < 50 then
-        Reactor.activate()
-    else
-        Reactor.deactivate()
-    end
-
-    if (CurrentHeat ~= OldHeat or CurrentEnergy ~= OldEnergy) then
-        computer.beep()
-        OldHeat = CurrentHeat
-        OldEnergy = CurrentEnergy
-    end
-
-    -- Create the toggle button
-    local toggleButton = Button:new(5, 9, 20, 3, "Toggle Reactor", onButtonClick)
-    reactorPanel:addChild(toggleButton)
-
-    -- Redraw the reactor panel
-    reactorPanel:draw()
-
-    local _, _, clickX, clickY = event.pull("touch")
-    for _, child in ipairs(reactorPanel.children) do
-        if child.handleClick then
-            child:handleClick(clickX, clickY, reactorPanel.x, reactorPanel.y)
+local function handleTouchEvents()
+    while running do
+        local _, _, clickX, clickY = event.pull("touch")
+        if ReactorPanel then
+            for _, child in ipairs(ReactorPanel.children) do
+                if child.handleClick then
+                    computer.beep(1000, 0.1) -- Debug beep to indicate click detected
+                    child:handleClick(clickX, clickY, ReactorPanel.x, ReactorPanel.y)
+                end
+            end
         end
     end
-    os.sleep(0.5)
-until event.pull(1) == "interrupted"
+end
+
+-- Start the update and touch handling threads
+local updateThread = thread.create(updateReactorPanel)
+local touchThread = thread.create(handleTouchEvents)
+
+-- Wait for user interruption to stop the program
+event.pull("interrupted")
+running = false
+
+-- Wait for threads to finish
+updateThread:join()
+touchThread:join()
