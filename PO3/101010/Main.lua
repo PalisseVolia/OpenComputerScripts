@@ -36,6 +36,7 @@ while input ~= "EAST" and input ~= "WEST" and input ~= "NORTH" and input ~= "SOU
 end
 
 while true do
+    os.sleep(0.1)
     for i, analyzerAddress in ipairs(analyzers) do
         local analyzer = component.proxy(analyzerAddress)
     
