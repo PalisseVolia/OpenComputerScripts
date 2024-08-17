@@ -174,7 +174,11 @@ local function StoreSeed()
     print("========================================")
     print("Storing seed...")
     moveTo(color, 1, -1)
-    robot.turnRight()
+    if color == -1 then
+        robot.turnLeft()
+    else
+        robot.turnRight()
+    end
     component.robot.drop(sides.front)
     print("Seed stored")
 end
@@ -183,7 +187,11 @@ local function GetNewSeed()
     print("Getting new seed...")
     moveTo(color, 2, -1)
     component.robot.suck(sides.front)
-    robot.turnLeft()
+    if color == -1 then
+        robot.turnRight()
+    else
+        robot.turnLeft()
+    end
     print("Seed got")
 end
 local function Reset()
