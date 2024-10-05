@@ -94,12 +94,13 @@ end
 TextLine = setmetatable({}, {__index = Window})
 TextLine.__index = TextLine
 
-function TextLine:new(x, y, text)
+function TextLine:new(x, y, text, color)
     -- Create a TextLine instance
     local self = setmetatable({}, TextLine)
     self.x = x
     self.y = y
     self.text = text
+    self.color = color or 0xFFFFFF -- Default to white if no color is provided
     return self
 end
 
@@ -112,8 +113,15 @@ function TextLine:draw(parentX, parentY, parentWidth)
         displayText = string.sub(self.text, 1, maxLength - 3) .. "..."
     end
     
+    -- Set the text color
+    local oldColor = gpu.getForeground()
+    gpu.setForeground(self.color)
+    
     -- Draw the text line at a fixed position relative to the parent window
     gpu.set(parentX + self.x + 1, parentY + self.y + 1, displayText)
+    
+    -- Restore the previous color
+    gpu.setForeground(oldColor)
 end
 
 -- ========================================
@@ -123,18 +131,19 @@ end
 ProgressBar = setmetatable({}, {__index = Window})
 ProgressBar.__index = ProgressBar
 
-function ProgressBar:new(x, y, progress)
+function ProgressBar:new(x, y, progress, color)
     -- Create a ProgressBar instance
     local self = setmetatable({}, ProgressBar)
     self.x = x
     self.y = y
     self.progress = progress or 0 -- Progress is a percentage (0-100)
+    self.color = color or 0xFFFFFF -- Default to white if no color is provided
     return self
 end
 
 function ProgressBar:draw(parentX, parentY, parentWidth)
     -- Calculate the length of the progress bar
-    local barLength = parentWidth - (self.x + 6) -- account for the corners and spaces, and the percentage text
+    local barLength = parentWidth - (self.x + 11) -- account for the corners and spaces, and the percentage text
     local filledLength = math.floor(barLength * self.progress / 100)
     local emptyLength = barLength - filledLength
 
@@ -142,8 +151,15 @@ function ProgressBar:draw(parentX, parentY, parentWidth)
     local bar = string.rep("█", filledLength) .. string.rep("░", emptyLength)
     local percentageText = string.format("%3d%%", self.progress)
 
+    -- Set the progress bar color
+    local oldColor = gpu.getForeground()
+    gpu.setForeground(self.color)
+
     -- Draw the progress bar at a fixed position relative to the parent window
     gpu.set(parentX + self.x + 1, parentY + self.y + 1, bar .. " " .. percentageText)
+
+    -- Restore the previous color
+    gpu.setForeground(oldColor)
 end
 
 -- ========================================

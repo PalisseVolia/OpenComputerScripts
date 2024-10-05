@@ -328,10 +328,10 @@ local function updateReactorPanel()
         local manualModeButton = Button:new(28, X+11, 17, 3, "Manual Mode", onManualModeButtonClick)
         ReactorPanel:addChild(manualModeButton)
 
-        local OutputText = TextLine:new(5, X+15, "Output : " .. Matrix.getOutput() .. " Rf/t ", 0xFF0000)
+        local OutputText = TextLine:new(5, X+15, "Output : " .. Matrix.getOutput()/2.5 .. " Rf/t ", 0xFF0000)
         ReactorPanel:addChild(OutputText)
         
-        local InputText = TextLine:new(5, X+16, "Input : " .. Matrix.getInput() .. " Rf/t ", 0x00FF00)
+        local InputText = TextLine:new(5, X+16, "Input : " .. Matrix.getInput()/2.5 .. " Rf/t ", 0x00FF00)
         ReactorPanel:addChild(InputText)
 
         -- Redraw the reactor panel
