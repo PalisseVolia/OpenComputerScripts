@@ -145,5 +145,18 @@ robot.select(5)
 component.inventory_controller.equip()
 robot.useDown()
 
+print("========================================")
+print("SENDING PULSE")
+print("========================================")
+moveTo(0, 2, 1)
+component.redstone.setOutput(sides.top, 15)
 
+print("========================================")
+print("GET ITEM")
+print("========================================")
+robot.select(1)
+while not component.tractor_beam.suck() do
+    os.sleep(0.1)
+end
 moveTo(0, 0, 0)
+robot.drop(sides.left)
