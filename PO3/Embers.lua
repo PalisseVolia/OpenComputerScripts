@@ -92,6 +92,27 @@ local function useItem(slot)
 end
 
 while true do
+    local input
+    local catalyst1
+    local catalyst2
+    while input ~= 1 and input ~= 2 and input ~= 3 do
+        print("   What should be crafted ?")
+        print("1. Flame barrier")
+        print("2. Ember crystal cluster")
+        print("3. Focal lens")
+        input = tonumber(io.read())
+    end
+    if input == 1 then
+        catalyst1 = 32-2
+        catalyst2 = 32-2
+    elseif input == 2 then
+        catalyst1 = 48-11
+        catalyst2 = 48-11
+    elseif input == 3 then
+        catalyst1 = 16-5
+        catalyst2 = 64-2
+    end
+
     local amount
     while amount == nil do
         print("How many times do you want to run the script ?")
@@ -115,8 +136,8 @@ while true do
         print("Getting center item")
         getItem(1, 2, 0, 5, 1)
         print("Getting Ashes")
-        getItem(2, 2, 0, 6, 30)
-        getItem(2, 2, 0, 7, 30)
+        getItem(2, 2, 0, 6, catalyst1)
+        getItem(2, 2, 0, 7, catalyst2)
     
         print("========================================")
         print("INPUTTING MATERIALS")
