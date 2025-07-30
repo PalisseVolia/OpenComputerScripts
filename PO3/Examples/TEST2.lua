@@ -159,7 +159,7 @@ while true do
         print("SENDING PULSE")
         print("========================================")
         moveTo(0, 2, 1)
-        component.redstone.setOutput(sides.top, 15)
+        component.redstone.setOutput(sides.front, 15)
     
         print("========================================")
         print("GET ITEM")
@@ -169,6 +169,8 @@ while true do
             os.sleep(0.1)
         end
         moveTo(0, 0, 0)
-        robot.drop(sides.left)
+        robot.turnLeft()
+        robot.drop()
+        robot.turnRight()
     end
 end
